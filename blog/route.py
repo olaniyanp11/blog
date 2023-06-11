@@ -1,5 +1,5 @@
 from flask import render_template,flash,redirect, url_for
-from blog import app
+from blog import app,db, bcrypt
 from blog.forms import Registrarionform, Loginform
 from blog.models import User, Post
 from datetime import datetime
@@ -39,8 +39,12 @@ def about():
 def register():
     form = Registrarionform()
     if form.validate_on_submit():
-        flash(f'Account created for{form.username.data}','success')
-        return redirect(url_for('index'))
+        hashed_pwd = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
+        user = User(username=form.username.data,email=form.email.data,password=hashed_pwd)
+        db.session.add(user)
+        db.session.commit()
+        flash(f'Account created you can login','success')
+        return redirect(url_for('login'))
     return render_template("register.html",About='register',form=form)
 
 
